@@ -1,67 +1,57 @@
-# AI Judge Assistant for Data Structures and Algorithms
+# AI Judge Assistant for ADA & DSA
 
-**2026 ASUS UGen AI League - Workplace AI**
+**2026 ASUS UGen AI League - Workplace AI (Battlefield Thunderstorm)**
 
 ## Overview
-This project aims to reduce the heavy workload of Teaching Assistants (TAs) in large-scale computer science courses like Data Structures and Algorithms (DSA). 
 
-By integrating a lightweight UI with the **Judge0** execution engine and **Large Language Models (LLMs)**, this system automatically evaluates student C++ submissions. When a submission fails (e.g., Time Limit Exceeded, Wrong Answer, Segmentation Fault), the system automatically triggers an AI assistant to provide:
-1. Exact bug location and error diagnosis.
-2. Time and Space Complexity (Big O) analysis.
-3. Algorithm optimization hints without giving away the direct solution.
+This project is designed to reduce the heavy grading and debugging workload of Teaching Assistants (TAs) in large-scale university computer science courses such as **Algorithm Design and Analysis (ADA)** and **Data Structures and Algorithms (DSA)**.
 
-## Architecture
-- **Frontend:** Streamlit (Python) - Provides file uploading (.cpp, .txt) and historical record tracking.
-- **Sandbox Execution:** Judge0 (Docker) - Compiles and runs student code against test cases securely.
-- **AI Analysis:** OpenRouter API (Llama-3 / Claude-3.5) - Generates TA-like feedback based on execution errors.
+By combining a **Self-Contained C++ Sandbox Judge Engine** with **Large Language Models (LLMs)**, the system compiles and evaluates student C++ submissions against multiple test cases with configurable CPU time limits. Whenever a submission fails (`Time Limit Exceeded`, `Wrong Answer`, `Runtime Error`, or `Compilation Error`), the system immediately renders the execution verdict and triggers a **Guided AI Teaching Assistant** to provide:
+
+1. **Pinpoint Bug Localization & Root Cause Diagnosis**
+2. **Automated Time & Space Complexity (Big-O) Analysis**
+3. **Guided Optimization Hints** (helping students improve their own code without leaking the full solution)
+4. **Interactive Follow-up Q&A Chat** for continuous learning
+
+## Key Features
+
+* **Self-Contained C++ Judge Engine:** Compiles C++ code (`g++ -O2`) in an isolated temporary directory, pipes `stdin`, enforces strict configurable CPU timeouts (`0.1s` to `10.0s`), and compares normalized `stdout` against expected outputs.
+* **Multi-Testcase & `.zip` Archive Pairing:** Supports uploading a `.zip` test package or multiple `.in` and `.out`/`.ans` files, automatically pairing them by filename (e.g., `1.in` with `1.out`, `2.in` with `2.out`) and reporting per-testcase execution time and status.
+* **Instant Verdict Rendering:** Immediately displays the overall verdict banner and per-testcase breakdown table before streaming the AI diagnostic report below.
+* **Bilingual UI & AI Diagnostics:** One-click toggle between **English** and **Traditional Chinese (繁體中文)**.
 
 ## Prerequisites
-- Python 3.8+
-- Docker & Docker Compose (for Judge0)
-- An active OpenRouter API Key
+
+* Python 3.8+
+* `g++` compiler (GCC) installed on the system (`sudo apt install -y g++` on Ubuntu/WSL2)
+* An active OpenRouter API Key
 
 ## Setup and Installation
 
-### 1. Start the Judge0 Sandbox
-The system relies on a local instance of Judge0 to safely execute code.
-```bash
-# Download and extract Judge0
-wget https://github.com/judge0/judge0/releases/download/v1.13.0/judge0-v1.13.0.zip
-unzip judge0-v1.13.0.zip
-cd judge0-v1.13.0
+### 1. Clone the Repository & Install Dependencies
 
-# Start the database and redis first, wait for 15 seconds
-sudo docker-compose up -d db redis
+    git clone https://github.com/mcjksieu005/ai_judge_assistant.git
+    cd ai_judge_assistant
+    pip install -r requirements.txt
 
-# Start the server and workers
-sudo docker-compose up -d
-```
-Verify Judge0 is running by checking: `curl http://localhost:2358/system_info`
+### 2. Configure API Key
 
-### 2. Setup the Web Application
-Clone this repository and navigate into the folder.
+Set your OpenRouter API key as an environment variable (recommended so your key stays secure locally) or replace the placeholder inside `app.py`:
 
-```bash
-# Install required Python packages
-pip install -r requirements.txt
-```
+    export OPENROUTER_API_KEY="your_openrouter_api_key_here"
 
-### 3. Configure API Key
-Open `app.py` and replace the placeholder API key with your actual OpenRouter API key:
-```python
-OPENROUTER_API_KEY = "YOUR_API_KEY_HERE"
-```
+### 3. Run the Application
 
-### 4. Run the Application
-```bash
-streamlit run app.py
-```
-Access the web interface at `http://localhost:8501`. 
+    streamlit run app.py
 
-## Usage
-1. Drag and drop a student's `.cpp` file into the code area.
-2. Upload the test cases (stdin and expected output) as `.txt` files.
-3. Click "Submit" to run the code. If the code results in an error (e.g., TLE), the AI TA will automatically generate a feedback report.
+Access the web interface in your browser at `http://localhost:8501`.
 
-## Note
-This repository contains the full integration with the Judge0 backend. Ensure your Docker environment is properly configured before running.
+## Usage Walkthrough
+
+1. **Upload or Edit Code:** Upload a `.cpp` file or edit the C++ source code directly in the workspace.
+2. **Set CPU Time Limit:** Adjust the time limit per test case (default: `1.0s`).
+3. **Select Test Case Mode:**
+   * **Built-in Multi-Testcase Benchmark:** Evaluates 3 built-in sorting test cases (`1.in` with $N=10$, `2.in` with $N=1,000$, and `3.in` with $N=80,000$).
+   * **Batch Upload (`.zip` or Multiple `.in`/`.out`):** Upload your own `.zip` archive or multiple `.in`/`.out` files (you can also click **Download Sample Test Cases (.zip)** to inspect the format).
+   * **Single Custom Input / Output:** Type custom `stdin` and `expected stdout` directly.
+4. **Evaluate & Interact:** Click **Compile, Run Test Cases & Start AI Diagnosis**. View the instant per-testcase verdict breakdown, read the AI complexity report, and ask follow-up questions in the chat box below.
